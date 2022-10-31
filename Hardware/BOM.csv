@@ -1,0 +1,13 @@
+﻿Part,Count,Link
+WizFi360-EVB-Pico,1,https://docs.wiznet.io/Product/Open-Source-Hardware/wizfi360-evb-pico
+Simple Water Detection Sensor,1,https://www.adafruit.com/product/4965
+Photo cell (CdS photoresistor),2,https://www.adafruit.com/product/161
+Waterproof 1-Wire DS18B20 Digital temperature sensor,2,https://www.adafruit.com/product/381
+DRV5021 Hall Effect Unipolar Switch,2,https://www.ti.com/product/DRV5021
+BME 280 I2C breakout,1,https://www.adafruit.com/product/2652 or other sources
+.1 uf capacitor,2,
+Breadboard,1,
+Jumper Wires,many,
+10k resistors,2,
+proto board for halls,1,
+Magnet(s),,

@@ -12,6 +12,9 @@
 #include <WizFi360Server.h>
 #include <WizFi360Udp.h>
 
+#include <SPI.h>
+#include <SD.h>
+
 #include "arduino_secrets.h"
 #include "board.h"
 #include "water_temp_sensor.h"
@@ -50,6 +53,8 @@ int reqCount = 0; // number of requests received
 
 WiFiServer server(80);
 
+File root;
+
 void setup()
 {
   // initialize serial for debugging
@@ -58,6 +63,31 @@ void setup()
   // give the user a moment to get the serial terminal connected.
   yield();
   delay(3000);
+
+#ifndef SIMULATION_AM
+//Print micro sd files from SPI1
+  SPI1.setRX(12);
+  SPI1.setCS(13);
+  SPI1.setSCK(10);
+  SPI1.setTX(11);
+
+  Serial.print("Initializing SD card...");
+
+  if (!SD.begin(13, SPI1)) {
+    Serial.println("initialization of SD failed!");
+  }
+  else
+  {
+  Serial.println("initialization of SD done.");
+
+  root = SD.open("/");
+
+  printDirectory(root, 0);
+
+  Serial.println("SD read done!");
+  }
+  
+#endif
   
   // initialize serial for WizFi360 module
 #if defined(ARDUINO_MEGA_2560)
@@ -251,4 +281,34 @@ void printWifiStatus()
   Serial.print("To see this page in action, open a browser to http://");
   Serial.println(ip);
   Serial.println();
+}
+
+void printDirectory(File dir, int numTabs) {
+  while (true) {
+
+    File entry =  dir.openNextFile();
+    if (! entry) {
+      // no more files
+      break;
+    }
+    for (uint8_t i = 0; i < numTabs; i++) {
+      Serial.print('\t');
+    }
+    Serial.print(entry.name());
+    if (entry.isDirectory()) {
+      Serial.println("/");
+      printDirectory(entry, numTabs + 1);
+    } else {
+      // files have sizes, directories do not
+      Serial.print("\t\t");
+      Serial.print(entry.size(), DEC);
+      time_t cr = entry.getCreationTime();
+      time_t lw = entry.getLastWrite();
+      struct tm * tmstruct = localtime(&cr);
+      Serial.printf("\tCREATION: %d-%02d-%02d %02d:%02d:%02d", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+      tmstruct = localtime(&lw);
+      Serial.printf("\tLAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
+    }
+    entry.close();
+  }
 }
